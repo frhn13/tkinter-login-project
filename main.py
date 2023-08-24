@@ -47,7 +47,45 @@ def choose_quiz_type():
 
 
 def addition_quiz():
-    pass
+    global answer
+    global score
+    global question_number
+    print(question_number)
+    if question_number <= QUIZ_QUESTIONS:
+        if question_number == 1:
+            quiz_choice_label.destroy()
+            addition_button.destroy()
+            subtraction_button.destroy()
+            multiplication_button.destroy()
+            division_button.destroy()
+        num1 = random.randint(1, 200)
+        num2 = random.randint(1, 200)
+        answer = num1 + num2
+        question_label.config(text=f"What is {num1} + {num2}?")
+        question_label.pack()
+        answer_entry.pack()
+        submit_addition_button.pack()
+        score_label.config(text=f"Score: {score}/{question_number-1}")
+        score_label.pack()
+    else:
+        score = 0
+        question_number = 1
+        question_label.destroy()
+        answer_entry.destroy()
+        submit_addition_button.destroy()
+        score_label.destroy()
+        choose_quiz_type()
+
+
+def check_addition():
+    global answer
+    global score
+    global question_number
+
+    if answer == int(answer_entry.get()):
+        score += 1
+    question_number += 1
+    addition_quiz()
 
 
 def subtraction_quiz():
@@ -91,17 +129,24 @@ multiplication_button = Button(text="Multiplication", command=multiplication_qui
                                fg="#00ff00", bg="black", activebackground="lightgrey")
 division_button = Button(text="Division", command=division_quiz, font=("Consolas", 30),
                          fg="#00ff00", bg="black", activebackground="lightgrey")
+submit_addition_button = Button(text="Check Answer", command=check_addition, font=("Consolas", 30),
+                                fg="#00ff00", bg="black", activebackground="lightgrey")
 
 # Entry boxes
 username = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black")
 password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
+answer_entry = Entry(window, font=("Consolas", 30), fg="#00ff00", bg="black")
 
 # Labels
 username_label = Label(window, text="Username: ", font=("Consolas", 30), fg="black")
 password_label = Label(window, text="Password: ", font=("Consolas", 30), fg="black")
 quiz_choice_label = Label(window, text="Choose Quiz Type", font=("Consolas", 30), fg="black")
+question_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
+score_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
 
 score = 0
+answer = 0
+question_number = 1
 
 if __name__ == '__main__':
     window.mainloop()
