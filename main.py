@@ -50,7 +50,8 @@ def addition_quiz():
     global answer
     global score
     global question_number
-    print(question_number)
+    global quiz_type
+    quiz_type = "add"
     if question_number <= QUIZ_QUESTIONS:
         if question_number == 1:
             quiz_choice_label.destroy()
@@ -64,40 +65,132 @@ def addition_quiz():
         question_label.config(text=f"What is {num1} + {num2}?")
         question_label.pack()
         answer_entry.pack()
-        submit_addition_button.pack()
-        score_label.config(text=f"Score: {score}/{question_number-1}")
+        submit_button.pack()
+        score_label.config(text=f"Score: {score}/{question_number - 1}")
         score_label.pack()
     else:
         score = 0
         question_number = 1
         question_label.destroy()
         answer_entry.destroy()
-        submit_addition_button.destroy()
+        submit_button.destroy()
         score_label.destroy()
         choose_quiz_type()
 
 
-def check_addition():
+def subtraction_quiz():
     global answer
     global score
     global question_number
+    global quiz_type
+    quiz_type = "sub"
+    if question_number <= QUIZ_QUESTIONS:
+        if question_number == 1:
+            quiz_choice_label.destroy()
+            addition_button.destroy()
+            subtraction_button.destroy()
+            multiplication_button.destroy()
+            division_button.destroy()
+        num1 = random.randint(1, 200)
+        num2 = random.randint(1, 200)
+        answer = num1 - num2
+        question_label.config(text=f"What is {num1} - {num2}?")
+        question_label.pack()
+        answer_entry.pack()
+        submit_button.pack()
+        score_label.config(text=f"Score: {score}/{question_number - 1}")
+        score_label.pack()
+    else:
+        score = 0
+        question_number = 1
+        question_label.destroy()
+        answer_entry.destroy()
+        submit_button.destroy()
+        score_label.destroy()
+        choose_quiz_type()
+
+
+def multiplication_quiz():
+    global answer
+    global score
+    global question_number
+    global quiz_type
+    quiz_type = "mul"
+    if question_number <= QUIZ_QUESTIONS:
+        if question_number == 1:
+            quiz_choice_label.destroy()
+            addition_button.destroy()
+            subtraction_button.destroy()
+            multiplication_button.destroy()
+            division_button.destroy()
+        num1 = random.randint(1, 20)
+        num2 = random.randint(1, 20)
+        answer = num1 * num2
+        question_label.config(text=f"What is {num1} * {num2}?")
+        question_label.pack()
+        answer_entry.pack()
+        submit_button.pack()
+        score_label.config(text=f"Score: {score}/{question_number - 1}")
+        score_label.pack()
+    else:
+        score = 0
+        question_number = 1
+        question_label.destroy()
+        answer_entry.destroy()
+        submit_button.destroy()
+        score_label.destroy()
+        choose_quiz_type()
+
+
+def division_quiz():
+    global answer
+    global score
+    global question_number
+    global quiz_type
+    quiz_type = "div"
+    if question_number <= QUIZ_QUESTIONS:
+        if question_number == 1:
+            quiz_choice_label.destroy()
+            addition_button.destroy()
+            subtraction_button.destroy()
+            multiplication_button.destroy()
+            division_button.destroy()
+        num1 = random.randint(1, 200)
+        num2 = random.randint(1, 200)
+        answer = num1 / num2
+        question_label.config(text=f"What is {num1} / {num2}?")
+        question_label.pack()
+        answer_entry.pack()
+        submit_button.pack()
+        score_label.config(text=f"Score: {score}/{question_number - 1}")
+        score_label.pack()
+    else:
+        score = 0
+        question_number = 1
+        question_label.destroy()
+        answer_entry.destroy()
+        submit_button.destroy()
+        score_label.destroy()
+        choose_quiz_type()
+
+
+def check_answer():
+    global answer
+    global score
+    global question_number
+    global quiz_type
 
     if answer == int(answer_entry.get()):
         score += 1
     question_number += 1
-    addition_quiz()
-
-
-def subtraction_quiz():
-    pass
-
-
-def multiplication_quiz():
-    pass
-
-
-def division_quiz():
-    pass
+    if quiz_type == "add":
+        addition_quiz()
+    elif quiz_type == "sub":
+        subtraction_quiz()
+    elif quiz_type == "mul":
+        multiplication_quiz()
+    else:
+        division_quiz()
 
 
 window = Tk()
@@ -129,8 +222,8 @@ multiplication_button = Button(text="Multiplication", command=multiplication_qui
                                fg="#00ff00", bg="black", activebackground="lightgrey")
 division_button = Button(text="Division", command=division_quiz, font=("Consolas", 30),
                          fg="#00ff00", bg="black", activebackground="lightgrey")
-submit_addition_button = Button(text="Check Answer", command=check_addition, font=("Consolas", 30),
-                                fg="#00ff00", bg="black", activebackground="lightgrey")
+submit_button = Button(text="Check Answer", command=check_answer, font=("Consolas", 30),
+                       fg="#00ff00", bg="black", activebackground="lightgrey")
 
 # Entry boxes
 username = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black")
@@ -147,6 +240,7 @@ score_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black
 score = 0
 answer = 0
 question_number = 1
+quiz_type = "add"
 
 if __name__ == '__main__':
     window.mainloop()
