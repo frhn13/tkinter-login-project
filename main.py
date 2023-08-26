@@ -1,3 +1,4 @@
+import csv
 from tkinter import *
 import pandas as pd
 import random
@@ -5,6 +6,8 @@ import random
 SCREEN_HEIGHT = 800
 SCREEN_WIDTH = 800
 QUIZ_QUESTIONS = 10
+SCORES_FILE = "scores.csv"
+USER_DETAILS_FILE = "users.csv"
 
 
 def starting_page():
@@ -25,37 +28,79 @@ def login(login_button, signup_button):
     password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
     username_label = Label(window, text="Username: ", font=("Consolas", 30), fg="black")
     password_label = Label(window, text="Password: ", font=("Consolas", 30), fg="black")
-    submit_login_button = Button(text="Login", command=lambda: submit_login(username, password, username_label,
-                                                                            password_label, submit_login_button),
-                                 font=("Consolas", 30),
-                                 fg="#00ff00", bg="black", activebackground="lightgrey")
+    submit_button = Button(text="Login", command=lambda: submit_login(username, password, username_label,
+                                                                      password_label, submit_button),
+                           font=("Consolas", 30),
+                           fg="#00ff00", bg="black", activebackground="lightgrey")
 
     username_label.place(x=10, y=10)
     username.place(x=250, y=20)
     password_label.place(x=10, y=100)
     password.place(x=250, y=110)
-    submit_login_button.place(x=300, y=250)
+    submit_button.place(x=300, y=250)
 
 
-def sign_up():
-    pass
+def sign_up(login_button, signup_button):
+    login_button.destroy()
+    signup_button.destroy()
+    username = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black")
+    password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
+    confirm_password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
+    username_label = Label(window, text="Username: ", font=("Consolas", 30), fg="black")
+    password_label = Label(window, text="Password: ", font=("Consolas", 30), fg="black")
+    confirm_password_label = Label(window, text="Confirm Password: ", font=("Consolas", 30), fg="black")
+    submit_button = Button(text="Sign Up", command=lambda: submit_signup(username, password, confirm_password,
+                                                                         username_label, password_label,
+                                                                         confirm_password_label, submit_button),
+                           font=("Consolas", 30),
+                           fg="#00ff00", bg="black", activebackground="lightgrey")
+    username_label.place(x=10, y=10)
+    username.place(x=250, y=20)
+    password_label.place(x=10, y=100)
+    password.place(x=250, y=110)
+    confirm_password_label.place(x=10, y=190)
+    confirm_password.place(x=450, y=200)
+    submit_button.place(x=300, y=350)
 
 
-def submit_login(username, password, username_label, password_label, submit_login_button):
-    login_details = {"user1": "12345",
-                     "user2": "54321"}
+def submit_login(username, password, username_label, password_label, submit_button):
+    global entered_user
+    user_details = pd.read_csv(USER_DETAILS_FILE, header=None)  # Gets all the details from the users file
     entered_username = username.get()
     entered_password = password.get()
+    for i in range(0, len(user_details.index)):
+        if entered_username == user_details.loc[i][0] and entered_password == str(user_details.loc[i][1]):
+            entered_user = entered_username
+            username_label.destroy()
+            username.destroy()
+            password_label.destroy()
+            password.destroy()
+            submit_button.destroy()
+            choose_quiz_type()
+    print("Login failed")
 
-    if entered_username in login_details and entered_password == login_details[entered_username]:
+
+def submit_signup(username, password, confirm_password, username_label, password_label, confirm_password_label,
+                  submit_button):
+    username_str = str(username.get())
+    password_str = str(password.get())
+    confirm_password_str = str(confirm_password.get())
+    if 5 <= len(username_str) <= 15 and 5 <= len(password_str) <= 15 and password_str == confirm_password_str:
+        with open(USER_DETAILS_FILE, "a") as users_file:
+            csv_writer = csv.writer(users_file)
+            csv_writer.writerow([username_str, password_str])
+        remove_white_lines = pd.read_csv(USER_DETAILS_FILE)  # Removes whitespace in the file
+        remove_white_lines.to_csv(USER_DETAILS_FILE, index=False)
         username_label.destroy()
         username.destroy()
         password_label.destroy()
         password.destroy()
-        submit_login_button.destroy()
-        choose_quiz_type()
+        confirm_password_label.destroy()
+        confirm_password.destroy()
+        submit_button.destroy()
+        starting_page()
     else:
-        print("Login failed")
+        print("Sign up failed")
 
 
 def choose_quiz_type():
@@ -63,22 +108,22 @@ def choose_quiz_type():
     addition_button = Button(text="Addition",
                              command=lambda: quiz_game(quiz_choice_label, addition_button,
                                                        subtraction_button, multiplication_button, division_button,
-                                                       "add"),
+                                                       "addition"),
                              font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     subtraction_button = Button(text="Subtraction",
                                 command=lambda: quiz_game(quiz_choice_label, addition_button,
                                                           subtraction_button, multiplication_button,
-                                                          division_button, "sub"),
+                                                          division_button, "subtraction"),
                                 font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     multiplication_button = Button(text="Multiplication",
                                    command=lambda: quiz_game(quiz_choice_label, addition_button,
                                                              subtraction_button, multiplication_button,
-                                                             division_button, "mul"),
+                                                             division_button, "multiplication"),
                                    font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     division_button = Button(text="Division",
                              command=lambda: quiz_game(quiz_choice_label, addition_button,
                                                        subtraction_button, multiplication_button, division_button,
-                                                       "div"),
+                                                       "division"),
                              font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     quiz_choice_label.pack()
     addition_button.pack()
@@ -111,22 +156,22 @@ def quiz_game(quiz_choice_label, addition_button, subtraction_button, multiplica
             multiplication_button.destroy()
             division_button.destroy()
         match quiz_type:
-            case "add":
+            case "addition":
                 num1 = random.randint(1, 200)
                 num2 = random.randint(1, 200)
                 answer = num1 + num2
                 question_label.config(text=f"What is {num1} + {num2}?")
-            case "sub":
+            case "subtraction":
                 num1 = random.randint(1, 200)
                 num2 = random.randint(1, 200)
                 answer = num1 - num2
                 question_label.config(text=f"What is {num1} - {num2}?")
-            case "mul":
+            case "multiplication":
                 num1 = random.randint(1, 20)
                 num2 = random.randint(1, 20)
                 answer = num1 * num2
                 question_label.config(text=f"What is {num1} * {num2}?")
-            case "div":
+            case "division":
                 num1 = random.randint(1, 200)
                 num2 = random.randint(1, 200)
                 answer = num1 / num2
@@ -143,7 +188,7 @@ def quiz_game(quiz_choice_label, addition_button, subtraction_button, multiplica
         answer_entry.destroy()
         submit_button.destroy()
         score_label.destroy()
-        save_score()
+        save_score(quiz_type)
 
 
 def check_answer(answer_entry, question_number_label, question_label, submit_button, score_label, quiz_choice_label,
@@ -166,9 +211,10 @@ def check_answer(answer_entry, question_number_label, question_label, submit_but
         pass
 
 
-def save_score():
+def save_score(quiz_type):
     global score
     global question_number
+    global entered_user
     results_label = Label(window, text="Well done, you got: {} / {}".format(score, question_number - 1),
                           font=("Consolas", 30), fg="black")
     logout_button = Button(text="Log out", command=lambda: endgame(results_label, logout_button, restart_button,
@@ -177,6 +223,11 @@ def save_score():
     restart_button = Button(text="Do Another Quiz", command=lambda: endgame(results_label, logout_button, restart_button
                                                                             , "restart"),
                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    with open(SCORES_FILE, "a") as scores_file:
+        csv_writer = csv.writer(scores_file)
+        csv_writer.writerow([entered_user, score, QUIZ_QUESTIONS, quiz_type])
+    remove_white_lines = pd.read_csv(SCORES_FILE)  # Removes whitespace in the file
+    remove_white_lines.to_csv(SCORES_FILE, index=False)
     results_label.pack()
     logout_button.pack()
     restart_button.pack()
@@ -193,7 +244,6 @@ def endgame(results_label, logout_button, restart_button, end_game):
     starting_page() if end_game == "logout" else choose_quiz_type()
 
 
-
 window = Tk()
 window.resizable(False, False)
 
@@ -207,6 +257,7 @@ window.geometry(f"{SCREEN_HEIGHT}x{SCREEN_WIDTH}+{x}+{y}")
 score = 0
 answer = 0
 question_number = 1
+entered_user = ""
 
 starting_page()
 
