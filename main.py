@@ -39,6 +39,25 @@ def submit_login():
 
 
 def choose_quiz_type():
+    quiz_choice_label = Label(window, text="Choose Quiz Type", font=("Consolas", 30), fg="black")
+    addition_button = Button(text="Addition",
+                             command=lambda: addition_quiz(quiz_choice_label, addition_button,
+                                                           subtraction_button, multiplication_button, division_button),
+                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    subtraction_button = Button(text="Subtraction",
+                                command=lambda: subtraction_quiz(quiz_choice_label, addition_button,
+                                                                 subtraction_button, multiplication_button,
+                                                                 division_button),
+                                font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    multiplication_button = Button(text="Multiplication",
+                                   command=lambda: multiplication_quiz(quiz_choice_label, addition_button,
+                                                                       subtraction_button, multiplication_button,
+                                                                       division_button),
+                                   font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    division_button = Button(text="Division",
+                             command=lambda: division_quiz(quiz_choice_label, addition_button,
+                                                           subtraction_button, multiplication_button, division_button),
+                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     quiz_choice_label.pack()
     addition_button.pack()
     subtraction_button.pack()
@@ -46,12 +65,20 @@ def choose_quiz_type():
     division_button.pack()
 
 
-def addition_quiz():
+def addition_quiz(quiz_choice_label, addition_button, subtraction_button, multiplication_button, division_button):
     global answer
     global score
     global question_number
     global quiz_type
     quiz_type = "add"
+    question_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
+    answer_entry = Entry(window, font=("Consolas", 30), fg="#00ff00", bg="black")
+    submit_button = Button(text="Check Answer",
+                           command=lambda: check_answer(answer_entry, question_label, submit_button, score_label,
+                                                        quiz_choice_label, addition_button, subtraction_button,
+                                                        multiplication_button, division_button),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    score_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
     if question_number <= QUIZ_QUESTIONS:
         if question_number == 1:
             quiz_choice_label.destroy()
@@ -78,12 +105,20 @@ def addition_quiz():
         choose_quiz_type()
 
 
-def subtraction_quiz():
+def subtraction_quiz(quiz_choice_label, addition_button, subtraction_button, multiplication_button, division_button):
     global answer
     global score
     global question_number
     global quiz_type
     quiz_type = "sub"
+    question_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
+    answer_entry = Entry(window, font=("Consolas", 30), fg="#00ff00", bg="black")
+    submit_button = Button(text="Check Answer",
+                           command=lambda: check_answer(answer_entry, question_label, submit_button, score_label,
+                                                        quiz_choice_label, addition_button, subtraction_button,
+                                                        multiplication_button, division_button),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    score_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
     if question_number <= QUIZ_QUESTIONS:
         if question_number == 1:
             quiz_choice_label.destroy()
@@ -110,12 +145,20 @@ def subtraction_quiz():
         choose_quiz_type()
 
 
-def multiplication_quiz():
+def multiplication_quiz(quiz_choice_label, addition_button, subtraction_button, multiplication_button, division_button):
     global answer
     global score
     global question_number
     global quiz_type
     quiz_type = "mul"
+    question_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
+    answer_entry = Entry(window, font=("Consolas", 30), fg="#00ff00", bg="black")
+    submit_button = Button(text="Check Answer",
+                           command=lambda: check_answer(answer_entry, question_label, submit_button, score_label,
+                                                        quiz_choice_label, addition_button, subtraction_button,
+                                                        multiplication_button, division_button),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    score_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
     if question_number <= QUIZ_QUESTIONS:
         if question_number == 1:
             quiz_choice_label.destroy()
@@ -142,12 +185,20 @@ def multiplication_quiz():
         choose_quiz_type()
 
 
-def division_quiz():
+def division_quiz(quiz_choice_label, addition_button, subtraction_button, multiplication_button, division_button):
     global answer
     global score
     global question_number
     global quiz_type
     quiz_type = "div"
+    question_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
+    answer_entry = Entry(window, font=("Consolas", 30), fg="#00ff00", bg="black")
+    submit_button = Button(text="Check Answer",
+                           command=lambda: check_answer(answer_entry, question_label, submit_button, score_label,
+                                                        quiz_choice_label, addition_button, subtraction_button,
+                                                        multiplication_button, division_button),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    score_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
     if question_number <= QUIZ_QUESTIONS:
         if question_number == 1:
             quiz_choice_label.destroy()
@@ -174,7 +225,8 @@ def division_quiz():
         choose_quiz_type()
 
 
-def check_answer():
+def check_answer(answer_entry, question_label, submit_button, score_label, quiz_choice_label, addition_button,
+                 subtraction_button, multiplication_button, division_button):
     global answer
     global score
     global question_number
@@ -183,14 +235,19 @@ def check_answer():
     if answer == int(answer_entry.get()):
         score += 1
     question_number += 1
+    question_label.destroy()
+    answer_entry.destroy()
+    submit_button.destroy()
+    score_label.destroy()
     if quiz_type == "add":
-        addition_quiz()
+        addition_quiz(quiz_choice_label, addition_button, subtraction_button, multiplication_button, division_button)
     elif quiz_type == "sub":
-        subtraction_quiz()
+        subtraction_quiz(quiz_choice_label, addition_button, subtraction_button, multiplication_button, division_button)
     elif quiz_type == "mul":
-        multiplication_quiz()
+        multiplication_quiz(quiz_choice_label, addition_button, subtraction_button, multiplication_button,
+                            division_button)
     else:
-        division_quiz()
+        division_quiz(quiz_choice_label, addition_button, subtraction_button, multiplication_button, division_button)
 
 
 window = Tk()
@@ -214,28 +271,13 @@ signup_button.pack(side=RIGHT)
 submit_login_button = Button(text="Login", command=submit_login, font=("Consolas", 30),
                              fg="#00ff00", bg="black", activebackground="lightgrey")
 
-addition_button = Button(text="Addition", command=addition_quiz, font=("Consolas", 30),
-                         fg="#00ff00", bg="black", activebackground="lightgrey")
-subtraction_button = Button(text="Subtraction", command=subtraction_quiz, font=("Consolas", 30),
-                            fg="#00ff00", bg="black", activebackground="lightgrey")
-multiplication_button = Button(text="Multiplication", command=multiplication_quiz, font=("Consolas", 30),
-                               fg="#00ff00", bg="black", activebackground="lightgrey")
-division_button = Button(text="Division", command=division_quiz, font=("Consolas", 30),
-                         fg="#00ff00", bg="black", activebackground="lightgrey")
-submit_button = Button(text="Check Answer", command=check_answer, font=("Consolas", 30),
-                       fg="#00ff00", bg="black", activebackground="lightgrey")
-
 # Entry boxes
 username = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black")
 password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
-answer_entry = Entry(window, font=("Consolas", 30), fg="#00ff00", bg="black")
 
 # Labels
 username_label = Label(window, text="Username: ", font=("Consolas", 30), fg="black")
 password_label = Label(window, text="Password: ", font=("Consolas", 30), fg="black")
-quiz_choice_label = Label(window, text="Choose Quiz Type", font=("Consolas", 30), fg="black")
-question_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
-score_label = Label(window, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
 
 score = 0
 answer = 0
