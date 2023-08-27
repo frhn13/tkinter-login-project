@@ -11,18 +11,71 @@ USER_DETAILS_FILE = "users.csv"
 
 
 def starting_page():
-    login_button = Button(text="Login", command=lambda: login(login_button, signup_button), font=("Consolas", 30),
-                          fg="#00ff00", bg="black", activebackground="lightgrey")
+    login_button = Button(text="Login", command=lambda: login(login_button, signup_button, view_scores_button),
+                          font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     login_button.pack(side=LEFT)
 
-    signup_button = Button(text="Sign Up", command=lambda: sign_up(login_button, signup_button), font=("Consolas", 30),
-                           fg="#00ff00", bg="black", activebackground="lightgrey")
+    signup_button = Button(text="Sign Up", command=lambda: sign_up(login_button, signup_button, view_scores_button),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     signup_button.pack(side=RIGHT)
+    view_scores_button = Button(text="View Scores", command=lambda: choose_scores(login_button, signup_button,
+                                                                                  view_scores_button),
+                                font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    view_scores_button.pack(side=TOP)
 
 
-def login(login_button, signup_button):
+def choose_scores(login_button, signup_button, view_scores_button):
     login_button.destroy()
     signup_button.destroy()
+    view_scores_button.destroy()
+
+    all_scores_button = Button(text="View All Scores", command=lambda: view_all_scores(all_scores_button),
+                               font=("Consolas", 30),
+                               fg="#00ff00", bg="black", activebackground="lightgrey")
+    all_scores_button.pack()
+
+
+def view_all_scores(all_scores_button):
+    all_scores_button.destroy()
+    all_scores = pd.read_csv(SCORES_FILE, header=None)
+    rows, cols = (len(all_scores.index), 5)
+    all_scores_arr = [[0 for i in range(cols)] for j in range(rows)]
+    for i in range(0, len(all_scores.index)):
+        for j in range(0, 4):
+            all_scores_arr[i][j] = all_scores.loc[i][j]
+        all_scores_arr[i][4] = all_scores.loc[i][1] / all_scores.loc[i][2]
+    all_scores_arr.sort(key=lambda x: x[4], reverse=True)  # Sorts list by second value
+    if len(all_scores_arr) > 5:
+        top_scores = 5
+    else:
+        top_scores = len(all_scores_arr)
+    scores_frame = Frame(window,  # Frame added to window, widgets added to frames
+                         bd=20,
+                         relief=RAISED  # Border type is raised
+                         )
+    scores_frame.pack()
+    title_label = Label(scores_frame, text="Top 5 Scores", font=("Consolas", 20), fg="black")
+    title_label.pack()
+    for i in range(0, top_scores):
+        score_label = Label(scores_frame, text=f"User: {all_scores_arr[i][0]},\n Score: {all_scores_arr[i][1]}/"
+                                               f"{all_scores_arr[i][2]},\n Quiz Type: {all_scores_arr[i][3]}\n",
+                            font=("Consolas", 18), fg="black")
+        score_label.pack()
+    return_button = Button(scores_frame, text="Return to Main Menu",
+                           command=lambda: return_to_main(scores_frame),
+                           font=("Consolas", 20), fg="#00ff00", bg="black", activebackground="lightgrey")
+    return_button.pack()
+
+
+def return_to_main(scores_frame):
+    scores_frame.destroy()
+    starting_page()
+
+
+def login(login_button, signup_button, view_scores_button):
+    login_button.destroy()
+    signup_button.destroy()
+    view_scores_button.destroy()
 
     username = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black")
     password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
@@ -40,9 +93,11 @@ def login(login_button, signup_button):
     submit_button.place(x=300, y=250)
 
 
-def sign_up(login_button, signup_button):
+def sign_up(login_button, signup_button, view_scores_button):
     login_button.destroy()
     signup_button.destroy()
+    view_scores_button.destroy()
+
     username = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black")
     password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
     confirm_password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
@@ -69,6 +124,7 @@ def submit_login(username, password, username_label, password_label, submit_butt
     entered_username = username.get()
     entered_password = password.get()
     for i in range(0, len(user_details.index)):
+        # In .loc[x][y], x is the row no and y is the column no
         if entered_username == user_details.loc[i][0] and entered_password == str(user_details.loc[i][1]):
             entered_user = entered_username
             username_label.destroy()
