@@ -28,15 +28,37 @@ def choose_scores(login_button, signup_button, view_scores_button):
     login_button.destroy()
     signup_button.destroy()
     view_scores_button.destroy()
-
-    all_scores_button = Button(text="View All Scores", command=lambda: view_all_scores(all_scores_button),
+    button_frame = Frame(window, bd=20, relief=RAISED)
+    all_scores_button = Button(button_frame, text="View All Scores",
+                               command=lambda: view_scores(button_frame, "all"),
                                font=("Consolas", 30),
                                fg="#00ff00", bg="black", activebackground="lightgrey")
+    all_add_scores_button = Button(button_frame, text="View Addition Scores",
+                                   command=lambda: view_scores(button_frame, "addition"),
+                                   font=("Consolas", 30),
+                                   fg="#00ff00", bg="black", activebackground="lightgrey")
+    all_sub_scores_button = Button(button_frame, text="View Subtraction Scores",
+                                   command=lambda: view_scores(button_frame, "subtraction"),
+                                   font=("Consolas", 30),
+                                   fg="#00ff00", bg="black", activebackground="lightgrey")
+    all_mul_scores_button = Button(button_frame, text="View Multiplication Scores",
+                                   command=lambda: view_scores(button_frame, "multiplication"),
+                                   font=("Consolas", 30),
+                                   fg="#00ff00", bg="black", activebackground="lightgrey")
+    all_div_scores_button = Button(button_frame, text="View Division Scores",
+                                   command=lambda: view_scores(button_frame, "division"),
+                                   font=("Consolas", 30),
+                                   fg="#00ff00", bg="black", activebackground="lightgrey")
+    button_frame.pack()
     all_scores_button.pack()
+    all_add_scores_button.pack()
+    all_sub_scores_button.pack()
+    all_mul_scores_button.pack()
+    all_div_scores_button.pack()
 
 
-def view_all_scores(all_scores_button):
-    all_scores_button.destroy()
+def view_scores(button_frame, quiz_type):
+    button_frame.destroy()
     all_scores = pd.read_csv(SCORES_FILE, header=None)
     rows, cols = (len(all_scores.index), 5)
     all_scores_arr = [[0 for i in range(cols)] for j in range(rows)]
@@ -45,22 +67,21 @@ def view_all_scores(all_scores_button):
             all_scores_arr[i][j] = all_scores.loc[i][j]
         all_scores_arr[i][4] = all_scores.loc[i][1] / all_scores.loc[i][2]
     all_scores_arr.sort(key=lambda x: x[4], reverse=True)  # Sorts list by second value
-    if len(all_scores_arr) > 5:
-        top_scores = 5
-    else:
-        top_scores = len(all_scores_arr)
     scores_frame = Frame(window,  # Frame added to window, widgets added to frames
                          bd=20,
                          relief=RAISED  # Border type is raised
                          )
     scores_frame.pack()
-    title_label = Label(scores_frame, text="Top 5 Scores", font=("Consolas", 20), fg="black")
+    title_label = Label(scores_frame, text="Up To Top 5 Scores", font=("Consolas", 20), fg="black")
     title_label.pack()
-    for i in range(0, top_scores):
-        score_label = Label(scores_frame, text=f"User: {all_scores_arr[i][0]},\n Score: {all_scores_arr[i][1]}/"
-                                               f"{all_scores_arr[i][2]},\n Quiz Type: {all_scores_arr[i][3]}\n",
-                            font=("Consolas", 18), fg="black")
-        score_label.pack()
+    counter = 0
+    for i in range(0, len(all_scores_arr)):
+        if counter < 5 and (quiz_type == "all" or quiz_type == all_scores_arr[i][3]):
+            score_label = Label(scores_frame, text=f"User: {all_scores_arr[i][0]},\n Score: {all_scores_arr[i][1]}/"
+                                                   f"{all_scores_arr[i][2]},\n Quiz Type: {all_scores_arr[i][3]}\n",
+                                font=("Consolas", 18), fg="black")
+            score_label.pack()
+            counter += 1
     return_button = Button(scores_frame, text="Return to Main Menu",
                            command=lambda: return_to_main(scores_frame),
                            font=("Consolas", 20), fg="#00ff00", bg="black", activebackground="lightgrey")
