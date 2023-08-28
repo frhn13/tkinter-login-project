@@ -208,17 +208,20 @@ def choose_quiz_type():
     quiz_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
     quiz_choice_label = Label(quiz_frame, text="Choose Quiz Type", font=("Consolas", 30), fg="black")
     addition_button = Button(quiz_frame, text="Addition",
-                             command=lambda: quiz_game(quiz_frame, "addition"),
+                             command=lambda: quiz_setup(quiz_frame, questions_entry, "addition"),
                              font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     subtraction_button = Button(quiz_frame, text="Subtraction",
-                                command=lambda: quiz_game(quiz_frame, "subtraction"),
+                                command=lambda: quiz_setup(quiz_frame, questions_entry, "subtraction"),
                                 font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     multiplication_button = Button(quiz_frame, text="Multiplication",
-                                   command=lambda: quiz_game(quiz_frame, "multiplication"),
+                                   command=lambda: quiz_setup(quiz_frame, questions_entry, "multiplication"),
                                    font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     division_button = Button(quiz_frame, text="Division",
-                             command=lambda: quiz_game(quiz_frame, "division"),
+                             command=lambda: quiz_setup(quiz_frame, questions_entry, "division"),
                              font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    no_questions_label = Label(quiz_frame, text="No of Questions", font=("Consolas", 30), fg="black")
+    questions_entry = Entry(quiz_frame, font=("Consolas", 30), fg="#00ff00", bg="black")
+    questions_entry.insert(0, 20)
     quiz_frame.pack()
     quiz_frame.pack_propagate(0)
     quiz_choice_label.pack()
@@ -226,25 +229,41 @@ def choose_quiz_type():
     subtraction_button.pack()
     multiplication_button.pack()
     division_button.pack()
+    no_questions_label.pack()
+    questions_entry.pack()
 
 
-def quiz_game(quiz_frame, quiz_type):
+def quiz_setup(quiz_frame, questions_entry, quiz_type):
+    global no_of_questions
+    try:
+        no_of_questions = int(questions_entry.get())
+        if no_of_questions < 5:
+            messagebox.showerror(title="Answer Invalid", message="Number of Questions must be more than 5")
+        elif no_of_questions > 50:
+            messagebox.showerror(title="Answer Invalid", message="Number of Questions must be less than 50")
+        else:
+            quiz_frame.destroy()
+            quiz_game(quiz_type)
+    except ValueError:
+        messagebox.showerror(title="Answer Invalid", message="Number of Questions must be an Integer")
+
+
+def quiz_game(quiz_type):
     global answer
     global score
     global question_number
+    global no_of_questions
     quiz_game_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
     question_number_label = Label(quiz_game_frame, text="Question {}".format(question_number), font=("Consolas", 30),
                                   fg="black")
     question_label = Label(quiz_game_frame, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
     answer_entry = Entry(quiz_game_frame, font=("Consolas", 30), fg="#00ff00", bg="black")
     submit_button = Button(quiz_game_frame, text="Check Answer",
-                           command=lambda: check_answer(answer_entry, quiz_game_frame, quiz_frame, quiz_type),
+                           command=lambda: check_answer(answer_entry, quiz_game_frame, quiz_type),
                            font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     score_label = Label(quiz_game_frame, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
 
-    if question_number <= QUIZ_QUESTIONS:
-        if question_number == 1:
-            quiz_frame.destroy()
+    if question_number <= no_of_questions:
         match quiz_type:
             case "addition":
                 num1 = random.randint(1, 200)
@@ -262,9 +281,12 @@ def quiz_game(quiz_frame, quiz_type):
                 answer = num1 * num2
                 question_label.config(text=f"What is {num1} * {num2}?")
             case "division":
-                num1 = random.randint(1, 200)
-                num2 = random.randint(1, 200)
-                answer = num1 / num2
+                num1 = random.randint(1, 400)
+                num2 = random.randint(1, 50)
+                while num1 % num2 != 0:
+                    num1 = random.randint(1, 200)
+                    num2 = random.randint(1, 50)
+                    answer = num1 / num2
                 question_label.config(text=f"What is {num1} / {num2}?")
         question_number_label.pack()
         question_label.pack()
@@ -279,7 +301,7 @@ def quiz_game(quiz_frame, quiz_type):
         save_score(quiz_type)
 
 
-def check_answer(answer_entry, quiz_game_frame, quiz_frame, quiz_type):
+def check_answer(answer_entry, quiz_game_frame, quiz_type):
     global answer
     global score
     global question_number
@@ -288,7 +310,7 @@ def check_answer(answer_entry, quiz_game_frame, quiz_frame, quiz_type):
             score += 1
         question_number += 1
         quiz_game_frame.destroy()
-        quiz_game(quiz_frame, quiz_type)
+        quiz_game(quiz_type)
     except ValueError:
         messagebox.showerror(title="Answer Invalid", message="Answer can only be an integer")
 
@@ -297,6 +319,7 @@ def save_score(quiz_type):
     global score
     global question_number
     global entered_user
+    global no_of_questions
     results_label = Label(window, text="Well done, you got: {} / {}".format(score, question_number - 1),
                           font=("Consolas", 30), fg="black")
     logout_button = Button(text="Log out", command=lambda: endgame(results_label, logout_button, restart_button,
@@ -307,7 +330,7 @@ def save_score(quiz_type):
                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     with open(SCORES_FILE, "a") as scores_file:
         csv_writer = csv.writer(scores_file)
-        csv_writer.writerow([entered_user, score, QUIZ_QUESTIONS, quiz_type])
+        csv_writer.writerow([entered_user, score, no_of_questions, quiz_type])
     remove_white_lines = pd.read_csv(SCORES_FILE)  # Removes whitespace in the file
     remove_white_lines.to_csv(SCORES_FILE, index=False)
     results_label.pack()
@@ -339,6 +362,7 @@ window.geometry(f"{SCREEN_HEIGHT}x{SCREEN_WIDTH}+{x}+{y}")
 score = 0
 answer = 0
 question_number = 1
+no_of_questions = 0
 entered_user = ""
 
 starting_page()
