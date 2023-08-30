@@ -3,6 +3,8 @@ from tkinter import *
 from tkinter import messagebox
 import pandas as pd
 import random
+from database_functions import tables_setup
+
 
 SCREEN_HEIGHT = 800
 SCREEN_WIDTH = 800
@@ -351,6 +353,7 @@ def endgame(results_label, logout_button, restart_button, end_game):
 
 window = Tk()
 window.resizable(False, False)
+window.title("Quiz Game")
 
 monitor_width = window.winfo_screenwidth()
 monitor_height = window.winfo_screenheight()
@@ -368,4 +371,5 @@ entered_user = ""
 starting_page()
 
 if __name__ == '__main__':
+    tables_setup()
     window.mainloop()
