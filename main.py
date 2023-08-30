@@ -1,16 +1,12 @@
-import csv
 from tkinter import *
 from tkinter import messagebox
-import pandas as pd
 import random
-from database_functions import tables_setup
+from database_functions import tables_setup, add_user, compare_user, add_score, display_scores
 
 
 SCREEN_HEIGHT = 800
 SCREEN_WIDTH = 800
 QUIZ_QUESTIONS = 10
-SCORES_FILE = "scores.csv"
-USER_DETAILS_FILE = "users.csv"
 
 
 def starting_page():
@@ -66,16 +62,8 @@ def choose_scores(window_frame):
 
 def view_scores(button_frame, quiz_type):
     button_frame.destroy()
-    all_scores = pd.read_csv(SCORES_FILE, header=None)
-    rows, cols = (len(all_scores.index), 5)
-    all_scores_arr = [[0 for i in range(cols)] for j in range(rows)]
-    for i in range(0, len(all_scores.index)):
-        for j in range(0, 4):
-            all_scores_arr[i][j] = all_scores.loc[i][j]
-        all_scores_arr[i][1] = round(all_scores.loc[i][1], 0)
-        all_scores_arr[i][2] = round(all_scores.loc[i][2], 0)
-        all_scores_arr[i][4] = all_scores.loc[i][1] / all_scores.loc[i][2]
-    all_scores_arr.sort(key=lambda i: i[4], reverse=True)  # Sorts list by second value
+    all_scores = display_scores()
+    all_scores.sort(key=lambda i: i[4], reverse=True)  # Sorts list by second value
     scores_frame = Frame(window,  # Frame added to window, widgets added to frames
                          bd=20,
                          relief=RAISED  # Border type is raised
@@ -84,10 +72,10 @@ def view_scores(button_frame, quiz_type):
     title_label = Label(scores_frame, text="Up To Top 5 Scores\n", font=("Consolas", 20), fg="black")
     title_label.pack()
     counter = 0
-    for i in range(0, len(all_scores_arr)):
-        if counter < 5 and (quiz_type == "all" or quiz_type == all_scores_arr[i][3]):
-            score_label = Label(scores_frame, text=f"User: {all_scores_arr[i][0]},\n Score: {all_scores_arr[i][1]}/"
-                                                   f"{all_scores_arr[i][2]},\n Quiz Type: {all_scores_arr[i][3]}\n",
+    for i in range(0, len(all_scores)):
+        if counter < 5 and (quiz_type == "all" or quiz_type == all_scores[i][3]):
+            score_label = Label(scores_frame, text=f"User: {all_scores[i][0]},\n Score: {all_scores[i][1]}/"
+                                                   f"{all_scores[i][2]},\n Quiz Type: {all_scores[i][3]}\n",
                                 font=("Consolas", 18), fg="black")
             score_label.pack()
             counter += 1
@@ -146,23 +134,19 @@ def sign_up(window_frame):
 
 def submit_login(username, password, username_label, password_label, submit_button):
     global entered_user
-    logged_in = False
-    user_details = pd.read_csv(USER_DETAILS_FILE, header=None)  # Gets all the details from the users file
     entered_username = username.get()
     entered_password = password.get()
-    for i in range(0, len(user_details.index)):
-        # In .loc[x][y], x is the row no and y is the column no
-        if entered_username == user_details.loc[i][0] and entered_password == str(user_details.loc[i][1]):
-            logged_in = True
-            entered_user = entered_username
-            username_label.destroy()
-            username.destroy()
-            password_label.destroy()
-            password.destroy()
-            submit_button.destroy()
-            choose_quiz_type()
-    if not logged_in:
-        messagebox.showerror(title="Login Failed", message="Username and password aren't recognised")
+    logged_in = compare_user(entered_username, entered_password)
+    if logged_in:
+        entered_user = entered_username
+        username_label.destroy()
+        username.destroy()
+        password_label.destroy()
+        password.destroy()
+        submit_button.destroy()
+        choose_quiz_type()
+    else:
+        messagebox.showerror(title="Login Failed", message="Username and/or password aren't recognised")
 
 
 def submit_signup(username, password, confirm_password, username_label, password_label, confirm_password_label,
@@ -191,19 +175,18 @@ def submit_signup(username, password, confirm_password, username_label, password
     elif not has_lower or not has_upper:
         messagebox.showerror(title="Sign Up Failed", message="Password must include an upper and lowercase letter")
     else:
-        with open(USER_DETAILS_FILE, "a") as users_file:
-            csv_writer = csv.writer(users_file)
-            csv_writer.writerow([username_str, password_str])
-        remove_white_lines = pd.read_csv(USER_DETAILS_FILE)  # Removes whitespace in the file
-        remove_white_lines.to_csv(USER_DETAILS_FILE, index=False)
-        username_label.destroy()
-        username.destroy()
-        password_label.destroy()
-        password.destroy()
-        confirm_password_label.destroy()
-        confirm_password.destroy()
-        submit_button.destroy()
-        starting_page()
+        user_added = add_user(username_str, password_str)
+        if user_added:
+            username_label.destroy()
+            username.destroy()
+            password_label.destroy()
+            password.destroy()
+            confirm_password_label.destroy()
+            confirm_password.destroy()
+            submit_button.destroy()
+            starting_page()
+        else:
+            messagebox.showerror(title="Sign Up Failed", message="That username has been taken")
 
 
 def choose_quiz_type():
@@ -330,11 +313,7 @@ def save_score(quiz_type):
     restart_button = Button(text="Do Another Quiz", command=lambda: endgame(results_label, logout_button,
                                                                             restart_button, "restart"),
                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
-    with open(SCORES_FILE, "a") as scores_file:
-        csv_writer = csv.writer(scores_file)
-        csv_writer.writerow([entered_user, score, no_of_questions, quiz_type])
-    remove_white_lines = pd.read_csv(SCORES_FILE)  # Removes whitespace in the file
-    remove_white_lines.to_csv(SCORES_FILE, index=False)
+    add_score(entered_user, score, no_of_questions, quiz_type, round(score/no_of_questions, 2))
     results_label.pack()
     logout_button.pack()
     restart_button.pack()
