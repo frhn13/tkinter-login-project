@@ -1,8 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import random
-from database_functions import tables_setup, add_user, compare_user, add_score, display_scores
-
+from database_functions import tables_setup, add_user, compare_user, add_score, display_scores, display_user_scores
 
 SCREEN_HEIGHT = 800
 SCREEN_WIDTH = 800
@@ -33,23 +32,23 @@ def choose_scores(window_frame):
     window_frame.destroy()
     button_frame = Frame(window, bd=20, relief=RAISED)
     all_scores_button = Button(button_frame, text="View All Scores",
-                               command=lambda: view_scores(button_frame, "all"),
+                               command=lambda: choose_user(button_frame, "all"),
                                font=("Consolas", 30),
                                fg="#00ff00", bg="black", activebackground="lightgrey")
     all_add_scores_button = Button(button_frame, text="View Addition Scores",
-                                   command=lambda: view_scores(button_frame, "addition"),
+                                   command=lambda: choose_user(button_frame, "addition"),
                                    font=("Consolas", 30),
                                    fg="#00ff00", bg="black", activebackground="lightgrey")
     all_sub_scores_button = Button(button_frame, text="View Subtraction Scores",
-                                   command=lambda: view_scores(button_frame, "subtraction"),
+                                   command=lambda: choose_user(button_frame, "subtraction"),
                                    font=("Consolas", 30),
                                    fg="#00ff00", bg="black", activebackground="lightgrey")
     all_mul_scores_button = Button(button_frame, text="View Multiplication Scores",
-                                   command=lambda: view_scores(button_frame, "multiplication"),
+                                   command=lambda: choose_user(button_frame, "multiplication"),
                                    font=("Consolas", 30),
                                    fg="#00ff00", bg="black", activebackground="lightgrey")
     all_div_scores_button = Button(button_frame, text="View Division Scores",
-                                   command=lambda: view_scores(button_frame, "division"),
+                                   command=lambda: choose_user(button_frame, "division"),
                                    font=("Consolas", 30),
                                    fg="#00ff00", bg="black", activebackground="lightgrey")
     button_frame.pack()
@@ -60,22 +59,52 @@ def choose_scores(window_frame):
     all_div_scores_button.pack()
 
 
-def view_scores(button_frame, quiz_type):
+def choose_user(button_frame, quiz_type):
     button_frame.destroy()
-    all_scores = display_scores()
-    all_scores.sort(key=lambda i: i[4], reverse=True)  # Sorts list by second value
+    all_user_check = BooleanVar()
+    users_frame = Frame(window, bd=20, relief=RAISED)
+    all_users_button = Checkbutton(users_frame, text="View scores from all users?", font=("Consolas", 20),
+                                   variable=all_user_check, fg="#00ff00", bg="black", activebackground="lightgrey")
+    chosen_user_entry = Entry(users_frame, font=("Consolas", 20), fg="#00ff00", bg="black")
+    chosen_user_label = Label(users_frame, text="Username to View: ", font=("Consolas", 30), fg="black")
+    submit_user_button = Button(users_frame, text="View Scores",
+                                command=lambda: find_scores(users_frame, chosen_user_entry, all_user_check,
+                                                            quiz_type),
+                                font=("Consolas", 30),
+                                fg="#00ff00", bg="black", activebackground="lightgrey")
+
+    users_frame.pack()
+    all_users_button.pack()
+    submit_user_button.pack()
+    chosen_user_label.pack()
+    chosen_user_entry.pack()
+
+
+def find_scores(users_frame, chosen_user_entry, all_user_check, quiz_type):
+    if all_user_check.get():
+        scores = display_scores(quiz_type)
+    else:
+        scores = display_user_scores(chosen_user_entry.get(), quiz_type)
+    users_frame.destroy()
+    scores.sort(key=lambda i: i[4], reverse=True)  # Sorts list by 5th value (percentage)
+    view_scores(scores)
+
+
+def view_scores(scores):
     scores_frame = Frame(window,  # Frame added to window, widgets added to frames
                          bd=20,
                          relief=RAISED  # Border type is raised
                          )
     scores_frame.pack()
-    title_label = Label(scores_frame, text="Up To Top 5 Scores\n", font=("Consolas", 20), fg="black")
+    title_label = Label(scores_frame,
+                        text="Top 5 Scores\n" if len(scores) > 5 else f"Top {len(scores)} Scores\n",
+                        font=("Consolas", 20), fg="black")
     title_label.pack()
     counter = 0
-    for i in range(0, len(all_scores)):
-        if counter < 5 and (quiz_type == "all" or quiz_type == all_scores[i][3]):
-            score_label = Label(scores_frame, text=f"User: {all_scores[i][0]},\n Score: {all_scores[i][1]}/"
-                                                   f"{all_scores[i][2]},\n Quiz Type: {all_scores[i][3]}\n",
+    for i in range(0, len(scores)):
+        if counter < 5:
+            score_label = Label(scores_frame, text=f"User: {scores[i][0]},\n Score: {scores[i][1]}/"
+                                                   f"{scores[i][2]},\n Quiz Type: {scores[i][3]}\n",
                                 font=("Consolas", 18), fg="black")
             score_label.pack()
             counter += 1
@@ -208,7 +237,6 @@ def choose_quiz_type():
     questions_entry = Entry(quiz_frame, font=("Consolas", 30), fg="#00ff00", bg="black")
     questions_entry.insert(0, 20)
     quiz_frame.pack()
-    quiz_frame.pack_propagate(0)
     quiz_choice_label.pack()
     addition_button.pack()
     subtraction_button.pack()
@@ -313,7 +341,7 @@ def save_score(quiz_type):
     restart_button = Button(text="Do Another Quiz", command=lambda: endgame(results_label, logout_button,
                                                                             restart_button, "restart"),
                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
-    add_score(entered_user, score, no_of_questions, quiz_type, round(score/no_of_questions, 2))
+    add_score(entered_user, score, no_of_questions, quiz_type, round(score / no_of_questions, 2))
     results_label.pack()
     logout_button.pack()
     restart_button.pack()

@@ -67,10 +67,25 @@ def display_users():
     conn.close()
 
 
-def display_scores():
+def display_scores(quiz_type):
     conn = sqlite3.connect("tables/scores.db")
     c = conn.cursor()
-    c.execute("SELECT * FROM scores")
+    if quiz_type == "all":
+        c.execute("SELECT * FROM scores")
+    else:
+        c.execute(f"SELECT * FROM scores WHERE quiz_type = '{quiz_type}'")
+    all_scores = c.fetchall()
+    conn.close()
+    return all_scores
+
+
+def display_user_scores(username, quiz_type):
+    conn = sqlite3.connect("tables/scores.db")
+    c = conn.cursor()
+    if quiz_type == "all":
+        c.execute(f"SELECT * FROM scores WHERE username = '{username}'")
+    else:
+        c.execute(f"SELECT * FROM scores WHERE username = '{username}' AND quiz_type = '{quiz_type}'")
     all_scores = c.fetchall()
     conn.close()
     return all_scores
