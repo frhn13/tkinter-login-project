@@ -4,9 +4,13 @@ import sqlite3
 def tables_setup():
     conn_users = sqlite3.connect("tables/users.db")
     conn_scores = sqlite3.connect("tables/scores.db")
+    conn_quizzes = sqlite3.connect("tables/quizzes.db")
+    conn_questions = sqlite3.connect("tables/questions.db")
 
     c_users = conn_users.cursor()
     c_scores = conn_scores.cursor()
+    c_quizzes = conn_quizzes.cursor()
+    c_questions = conn_questions.cursor()
 
     c_users.execute("""CREATE TABLE if not exists users
              (username TEXT UNIQUE NOT NULL,
@@ -19,12 +23,29 @@ def tables_setup():
             score INTEGER NOT NULL,
             no_questions INTEGER NOT NULL,
             quiz_type TEXT NOT NULL,
-            percentage REAL NOT NULL);""")
+            percentage REAL NOT NULL,
+            quiz_id INTEGER NOT NULL);""")
 
     conn_scores.commit()
 
+    c_quizzes.execute("""CREATE TABLE if not exists quizzes
+                (no_questions TEXT NOT NULL,
+                quiz_type TEXT NOT NULL);""")
+
+    conn_quizzes.commit()
+
+    c_questions.execute("""CREATE TABLE if not exists questions
+                    (question TEXT NOT NULL,
+                    answer INTEGER NOT NULL,
+                    correct BOOLEAN,
+                    question_quiz INTEGER NOT NULL);""")
+
+    conn_questions.commit()
+
     conn_users.close()
     conn_scores.close()
+    conn_quizzes.close()
+    conn_questions.close()
 
 
 def add_user(username, password):
@@ -63,7 +84,6 @@ def display_users():
     c = conn.cursor()
     c.execute("SELECT * FROM users")
     items = c.fetchall()
-    print(items)
     conn.close()
 
 
@@ -89,3 +109,28 @@ def display_user_scores(username, quiz_type):
     all_scores = c.fetchall()
     conn.close()
     return all_scores
+
+
+def add_quiz(no_questions, quiz_type):
+    conn = sqlite3.connect("tables/quizzes.db")
+    c = conn.cursor()
+    c.execute(f"INSERT INTO quizzes VALUES ('{no_questions}', '{quiz_type}')")
+    conn.commit()
+    conn.close()
+
+
+def add_question(question, answer, question_quiz):
+    conn = sqlite3.connect("tables/questions.db")
+    c = conn.cursor()
+    c.execute(f"INSERT INTO questions VALUES ('{question}', '{answer}', '{question_quiz}')")
+    conn.commit()
+    conn.close()
+
+
+def display_quiz_id():
+    conn = sqlite3.connect("tables/quizzes.db")
+    c = conn.cursor()
+    c.execute(f"SELECT MAX(rowid) FROM quizzes")
+    quiz_id = c.fetchone()
+    conn.close()
+    return quiz_id[0]

@@ -1,7 +1,8 @@
 from tkinter import *
 from tkinter import messagebox
 import random
-from database_functions import tables_setup, add_user, compare_user, add_score, display_scores, display_user_scores
+from database_functions import tables_setup, add_user, compare_user, add_score, display_scores, display_user_scores, \
+    display_quiz_id, add_question, add_quiz
 
 SCREEN_HEIGHT = 800
 SCREEN_WIDTH = 800
@@ -256,7 +257,9 @@ def quiz_setup(quiz_frame, questions_entry, quiz_type):
             messagebox.showerror(title="Answer Invalid", message="Number of Questions must be less than 50")
         else:
             quiz_frame.destroy()
+            add_quiz(no_of_questions, quiz_type)
             quiz_game(quiz_type)
+
     except ValueError:
         messagebox.showerror(title="Answer Invalid", message="Number of Questions must be an Integer")
 
@@ -272,7 +275,8 @@ def quiz_game(quiz_type):
     question_label = Label(quiz_game_frame, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
     answer_entry = Entry(quiz_game_frame, font=("Consolas", 30), fg="#00ff00", bg="black")
     submit_button = Button(quiz_game_frame, text="Check Answer",
-                           command=lambda: check_answer(answer_entry, quiz_game_frame, quiz_type),
+                           command=lambda: check_answer(answer_entry, question_label.cget("text"),  quiz_game_frame,
+                                                        quiz_type),
                            font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     score_label = Label(quiz_game_frame, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
 
@@ -314,7 +318,7 @@ def quiz_game(quiz_type):
         save_score(quiz_type)
 
 
-def check_answer(answer_entry, quiz_game_frame, quiz_type):
+def check_answer(answer_entry, question, quiz_game_frame, quiz_type):
     global answer
     global score
     global question_number
@@ -326,6 +330,8 @@ def check_answer(answer_entry, quiz_game_frame, quiz_type):
         quiz_game(quiz_type)
     except ValueError:
         messagebox.showerror(title="Answer Invalid", message="Answer can only be an integer")
+    current_quiz = display_quiz_id()
+    add_question(question, answer, current_quiz)
 
 
 def save_score(quiz_type):
@@ -341,7 +347,8 @@ def save_score(quiz_type):
     restart_button = Button(text="Do Another Quiz", command=lambda: endgame(results_label, logout_button,
                                                                             restart_button, "restart"),
                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
-    add_score(entered_user, score, no_of_questions, quiz_type, round(score / no_of_questions, 2))
+    current_quiz = display_quiz_id()
+    add_score(entered_user, score, no_of_questions, quiz_type, round(score / no_of_questions, 2), current_quiz)
     results_label.pack()
     logout_button.pack()
     restart_button.pack()
