@@ -71,10 +71,10 @@ def compare_user(username, password):
         return False
 
 
-def add_score(username, score, no_questions, quiz_type, percentage):
+def add_score(username, score, no_questions, quiz_type, percentage, current_quiz):
     conn = sqlite3.connect("tables/scores.db")
     c = conn.cursor()
-    c.execute(f"INSERT INTO scores VALUES ('{username}', '{score}', '{no_questions}', '{quiz_type}', '{percentage}')")
+    c.execute(f"INSERT INTO scores VALUES ('{username}', '{score}', '{no_questions}', '{quiz_type}', '{percentage}', '{current_quiz}')")
     conn.commit()
     conn.close()
 
@@ -119,10 +119,10 @@ def add_quiz(no_questions, quiz_type):
     conn.close()
 
 
-def add_question(question, answer, question_quiz):
+def add_question(question, answer, correct, question_quiz):
     conn = sqlite3.connect("tables/questions.db")
     c = conn.cursor()
-    c.execute(f"INSERT INTO questions VALUES ('{question}', '{answer}', '{question_quiz}')")
+    c.execute(f"INSERT INTO questions VALUES ('{question}', '{answer}', '{correct}', '{question_quiz}')")
     conn.commit()
     conn.close()
 
@@ -134,3 +134,12 @@ def display_quiz_id():
     quiz_id = c.fetchone()
     conn.close()
     return quiz_id[0]
+
+
+def display_quiz_questions(quiz_id):
+    conn = sqlite3.connect("tables/questions.db")
+    c = conn.cursor()
+    c.execute(f"SELECT * FROM questions WHERE question_quiz = '{quiz_id}'")
+    quiz_questions = c.fetchall()
+    conn.close()
+    return quiz_questions

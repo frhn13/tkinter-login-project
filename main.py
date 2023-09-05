@@ -1,8 +1,8 @@
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import random
 from database_functions import tables_setup, add_user, compare_user, add_score, display_scores, display_user_scores, \
-    display_quiz_id, add_question, add_quiz
+    display_quiz_id, add_question, add_quiz, display_quiz_questions
 
 SCREEN_HEIGHT = 800
 SCREEN_WIDTH = 800
@@ -275,7 +275,7 @@ def quiz_game(quiz_type):
     question_label = Label(quiz_game_frame, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
     answer_entry = Entry(quiz_game_frame, font=("Consolas", 30), fg="#00ff00", bg="black")
     submit_button = Button(quiz_game_frame, text="Check Answer",
-                           command=lambda: check_answer(answer_entry, question_label.cget("text"),  quiz_game_frame,
+                           command=lambda: check_answer(answer_entry, question_label.cget("text"), quiz_game_frame,
                                                         quiz_type),
                            font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     score_label = Label(quiz_game_frame, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
@@ -322,16 +322,18 @@ def check_answer(answer_entry, question, quiz_game_frame, quiz_type):
     global answer
     global score
     global question_number
+    current_quiz = display_quiz_id()
     try:
         if answer == int(answer_entry.get()):
             score += 1
+            add_question(question, answer, True, current_quiz)
+        else:
+            add_question(question, answer, False, current_quiz)
         question_number += 1
         quiz_game_frame.destroy()
         quiz_game(quiz_type)
     except ValueError:
         messagebox.showerror(title="Answer Invalid", message="Answer can only be an integer")
-    current_quiz = display_quiz_id()
-    add_question(question, answer, current_quiz)
 
 
 def save_score(quiz_type):
@@ -339,29 +341,60 @@ def save_score(quiz_type):
     global question_number
     global entered_user
     global no_of_questions
-    results_label = Label(window, text="Well done, you got: {} / {}".format(score, question_number - 1),
+
+    scores_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
+
+    results_label = Label(scores_frame, text="Well done, you got: {} / {}".format(score, question_number - 1),
                           font=("Consolas", 30), fg="black")
-    logout_button = Button(text="Log out", command=lambda: endgame(results_label, logout_button, restart_button,
-                                                                   "logout"),
+    logout_button = Button(scores_frame, text="Log out", command=lambda: endgame(scores_frame, "logout"),
                            font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
-    restart_button = Button(text="Do Another Quiz", command=lambda: endgame(results_label, logout_button,
-                                                                            restart_button, "restart"),
+    restart_button = Button(scores_frame, text="Do Another Quiz", command=lambda: endgame(scores_frame, "restart"),
                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    quiz_report_button = Button(scores_frame, text="View Quiz Report",
+                                command=lambda: quiz_report(scores_frame),
+                                font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     current_quiz = display_quiz_id()
     add_score(entered_user, score, no_of_questions, quiz_type, round(score / no_of_questions, 2), current_quiz)
+    scores_frame.pack()
+    scores_frame.pack_propagate(0)
     results_label.pack()
+    logout_button.pack()
+    restart_button.pack()
+    quiz_report_button.pack()
+
+
+def quiz_report(scores_frame):
+    scores_frame.destroy()
+    report_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
+    report_frame.pack()
+    report_frame.pack_propagate(0)
+    current_quiz = display_quiz_id()
+    quiz_questions = display_quiz_questions(current_quiz)
+    logout_button = Button(report_frame, text="Log out", command=lambda: endgame(report_frame, "logout"),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    restart_button = Button(report_frame, text="Do Another Quiz", command=lambda: endgame(report_frame, "restart"),
+                            font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+
+    for i in range(len(quiz_questions)):
+        if quiz_questions[i][2] == "True":
+            score_label = Label(report_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
+                                                   f"{quiz_questions[i][2]}\n",
+                                font=("Consolas", 18), fg="black")
+        else:
+            score_label = Label(report_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
+                                                   f"{quiz_questions[i][2]}, Answer: {quiz_questions[i][1]}\n",
+                                font=("Consolas", 18), fg="black")
+        score_label.pack()
     logout_button.pack()
     restart_button.pack()
 
 
-def endgame(results_label, logout_button, restart_button, end_game):
+def endgame(frame, end_game):
     global score
     global question_number
+    frame.destroy()
     score = 0
     question_number = 1
-    results_label.destroy()
-    logout_button.destroy()
-    restart_button.destroy()
     starting_page() if end_game == "logout" else choose_quiz_type()
 
 
