@@ -143,3 +143,28 @@ def display_quiz_questions(quiz_id):
     quiz_questions = c.fetchall()
     conn.close()
     return quiz_questions
+
+
+def display_full_quiz_questions(quiz_id):
+    conn = sqlite3.connect("tables/questions.db")
+    c = conn.cursor()
+    c.execute(f"SELECT rowid, * FROM questions WHERE question_quiz = '{quiz_id}'")
+    quiz_questions = c.fetchall()
+    conn.close()
+    return quiz_questions
+
+
+def display_quizzes():
+    conn = sqlite3.connect("tables/quizzes.db")
+    c = conn.cursor()
+    c.execute(f"SELECT rowid, * FROM quizzes")
+    quizzes = c.fetchall()
+    conn.close()
+    return quizzes
+
+
+def update_question(correct, question_id):
+    conn = sqlite3.connect("tables/questions.db")
+    c = conn.cursor()
+    c.execute(f"UPDATE quizzes SET correct = {correct} WHERE rowid = {question_id}")
+    conn.close()

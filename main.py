@@ -2,9 +2,10 @@ from tkinter import *
 from tkinter import messagebox, ttk
 import random
 from database_functions import tables_setup, add_user, compare_user, add_score, display_scores, display_user_scores, \
-    display_quiz_id, add_question, add_quiz, display_quiz_questions
+    display_quiz_id, add_question, add_quiz, display_quiz_questions, display_quizzes, update_question, \
+    display_full_quiz_questions
 
-SCREEN_HEIGHT = 800
+SCREEN_HEIGHT = 900
 SCREEN_WIDTH = 800
 QUIZ_QUESTIONS = 10
 
@@ -107,16 +108,20 @@ def view_scores(scores):
             score_label = Label(scores_frame, text=f"User: {scores[i][0]},\n Score: {scores[i][1]}/"
                                                    f"{scores[i][2]},\n Quiz Type: {scores[i][3]}\n",
                                 font=("Consolas", 18), fg="black")
-            score_label.grid(row=i + 1, column=0)
-            quiz_report_button = Button(scores_frame, text="View Quiz Report",
-                                        command=lambda: menu_quiz_report(scores_frame, scores[i], scores),
-                                        font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
-            quiz_report_button.grid(row=i + 1, column=1)
+            score_label.grid(row=i + 1, column=0, columnspan=2)
             counter += 1
+    quiz_report_button = Button(scores_frame, text="View Quiz Report",
+                                command=lambda: menu_quiz_report(scores_frame, scores[int(quiz_report_entry.get())-1], scores),
+                                font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+
+    quiz_report_entry = Entry(scores_frame, font=("Consolas", 20), fg="#00ff00", bg="black")
+    quiz_report_entry.grid(row=6, column=0)
+    quiz_report_button.grid(row=6, column=1)
     return_button = Button(scores_frame, text="Return to Main Menu",
                            command=lambda: return_to_main(scores_frame),
                            font=("Consolas", 20), fg="#00ff00", bg="black", activebackground="lightgrey")
-    return_button.grid(row=6, column=0, columnspan=2)
+    return_button.grid(row=7, column=0, columnspan=2)
+    print(scores_frame.winfo_children())
 
 
 def menu_quiz_report(scores_frame, score, scores):
@@ -267,6 +272,9 @@ def choose_quiz_type():
     division_button = Button(quiz_frame, text="Division",
                              command=lambda: quiz_setup(quiz_frame, questions_entry, "division"),
                              font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    previous_quiz_button = Button(quiz_frame, text="Do Previous Quiz",
+                                  command=lambda: previous_quizzes(quiz_frame),
+                                  font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     no_questions_label = Label(quiz_frame, text="No of Questions", font=("Consolas", 30), fg="black")
     questions_entry = Entry(quiz_frame, font=("Consolas", 30), fg="#00ff00", bg="black")
     questions_entry.insert(0, 20)
@@ -278,6 +286,77 @@ def choose_quiz_type():
     division_button.pack()
     no_questions_label.pack()
     questions_entry.pack()
+    previous_quiz_button.pack()
+
+
+def previous_quizzes(quiz_frame):
+    quiz_frame.destroy()
+    quizzes = display_quizzes()
+    quizzes_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
+    for i in range(len(quizzes)):
+        quiz_label = Label(quizzes_frame, text=f"Quiz No: {quizzes[i][0]},\n No. of Questions: {quizzes[i][1]}\n"
+                                               f"Quiz Type: {quizzes[i][2]}\n", font=("Consolas", 18), fg="black")
+        choose_quiz_button = Button(quizzes_frame, text="Do Quiz",
+                                    command=lambda: create_quiz(quizzes_frame, quizzes[i]),
+                                    font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+        quiz_label.grid(row=i, column=0)
+        choose_quiz_button.grid(row=i, column=1)
+    quizzes_frame.pack()
+    quizzes_frame.pack_propagate(0)
+
+
+def create_quiz(quiz_frame, quiz):
+    quiz_frame.destroy()
+    quiz_game(quiz)
+
+
+def quiz_game(quiz):
+    global answer
+    global score
+    global question_number
+    global no_of_questions
+    quiz_questions = display_full_quiz_questions(quiz[0])
+    quiz_game_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
+    question_number_label = Label(quiz_game_frame, text="Question {}".format(question_number), font=("Consolas", 30),
+                                  fg="black")
+    question_label = Label(quiz_game_frame, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
+    answer_entry = Entry(quiz_game_frame, font=("Consolas", 30), fg="#00ff00", bg="black")
+    submit_button = Button(quiz_game_frame, text="Check Answer",
+                           command=lambda: check_fixed_answer(answer_entry, quiz_game_frame, quiz,
+                                                              quiz_questions[question_number-1][0]),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    score_label = Label(quiz_game_frame, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
+
+    if question_number <= len(quiz_questions):
+        answer = quiz_questions[question_number-1][2]
+        question_label.config(text=quiz_questions[question_number-1][1])
+        question_number_label.pack()
+        question_label.pack()
+        answer_entry.pack()
+        submit_button.pack()
+        score_label.config(text=f"Score: {score}/{question_number - 1}")
+        score_label.pack()
+        quiz_game_frame.pack()
+        quiz_game_frame.pack_propagate(0)
+    else:
+        quiz_game_frame.destroy()
+
+
+def check_fixed_answer(answer_entry, quiz_game_frame, quiz, question_id):
+    global answer
+    global score
+    global question_number
+    try:
+        if answer == int(answer_entry.get()):
+            score += 1
+            update_question(True, question_id)
+        else:
+            update_question(False, question_id)
+        question_number += 1
+        quiz_game_frame.destroy()
+        quiz_game(quiz)
+    except ValueError:
+        messagebox.showerror(title="Answer Invalid", message="Answer can only be an integer")
 
 
 def quiz_setup(quiz_frame, questions_entry, quiz_type):
@@ -291,13 +370,13 @@ def quiz_setup(quiz_frame, questions_entry, quiz_type):
         else:
             quiz_frame.destroy()
             add_quiz(no_of_questions, quiz_type)
-            quiz_game(quiz_type)
+            random_quiz_game(quiz_type)
 
     except ValueError:
         messagebox.showerror(title="Answer Invalid", message="Number of Questions must be an Integer")
 
 
-def quiz_game(quiz_type):
+def random_quiz_game(quiz_type):
     global answer
     global score
     global question_number
@@ -364,7 +443,7 @@ def check_answer(answer_entry, question, quiz_game_frame, quiz_type):
             add_question(question, answer, False, current_quiz)
         question_number += 1
         quiz_game_frame.destroy()
-        quiz_game(quiz_type)
+        random_quiz_game(quiz_type)
     except ValueError:
         messagebox.showerror(title="Answer Invalid", message="Answer can only be an integer")
 
