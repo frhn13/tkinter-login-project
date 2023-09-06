@@ -100,59 +100,102 @@ def view_scores(scores):
     title_label = Label(scores_frame,
                         text="Top 5 Scores\n" if len(scores) > 5 else f"Top {len(scores)} Scores\n",
                         font=("Consolas", 20), fg="black")
-    title_label.pack()
+    title_label.grid(row=0, column=0, columnspan=2)
     counter = 0
     for i in range(0, len(scores)):
         if counter < 5:
             score_label = Label(scores_frame, text=f"User: {scores[i][0]},\n Score: {scores[i][1]}/"
                                                    f"{scores[i][2]},\n Quiz Type: {scores[i][3]}\n",
                                 font=("Consolas", 18), fg="black")
-            score_label.pack()
+            score_label.grid(row=i + 1, column=0)
+            quiz_report_button = Button(scores_frame, text="View Quiz Report",
+                                        command=lambda: menu_quiz_report(scores_frame, scores[i], scores),
+                                        font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+            quiz_report_button.grid(row=i + 1, column=1)
             counter += 1
     return_button = Button(scores_frame, text="Return to Main Menu",
                            command=lambda: return_to_main(scores_frame),
                            font=("Consolas", 20), fg="#00ff00", bg="black", activebackground="lightgrey")
+    return_button.grid(row=6, column=0, columnspan=2)
+
+
+def menu_quiz_report(scores_frame, score, scores):
+    scores_frame.destroy()
+    report_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
+    report_frame.pack()
+    report_frame.pack_propagate(0)
+    quiz_questions = display_quiz_questions(score[5])
+    quizzes_button = Button(report_frame, text="Return to Scores",
+                            command=lambda: return_to_scores(report_frame, scores),
+                            font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    return_button = Button(report_frame, text="Return to Main Menu", command=lambda: return_to_main(report_frame),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+
+    for i in range(len(quiz_questions)):
+        if quiz_questions[i][2] == "True":
+            score_label = Label(report_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
+                                                   f"{quiz_questions[i][2]}\n",
+                                font=("Consolas", 18), fg="black")
+        else:
+            score_label = Label(report_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
+                                                   f"{quiz_questions[i][2]}, Answer: {quiz_questions[i][1]}\n",
+                                font=("Consolas", 18), fg="black")
+        score_label.pack()
+    quizzes_button.pack()
     return_button.pack()
 
 
-def return_to_main(scores_frame):
-    scores_frame.destroy()
+def return_to_scores(frame, scores):
+    frame.destroy()
+    view_scores(scores)
+
+
+def return_to_main(frame):
+    frame.destroy()
     starting_page()
 
 
 def login(window_frame):
     window_frame.destroy()
+    login_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
+    username = Entry(login_frame, font=("Consolas", 20), fg="#00ff00", bg="black")
+    password = Entry(login_frame, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
+    username_label = Label(login_frame, text="Username: ", font=("Consolas", 30), fg="black")
+    password_label = Label(login_frame, text="Password: ", font=("Consolas", 30), fg="black")
+    submit_button = Button(login_frame, text="Login", command=lambda: submit_login(username, password, login_frame),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    return_button = Button(login_frame, text="Return to Main Menu",
+                           command=lambda: return_to_main(login_frame),
+                           font=("Consolas", 20), fg="#00ff00", bg="black", activebackground="lightgrey")
 
-    username = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black")
-    password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
-    username_label = Label(window, text="Username: ", font=("Consolas", 30), fg="black")
-    password_label = Label(window, text="Password: ", font=("Consolas", 30), fg="black")
-    submit_button = Button(text="Login", command=lambda: submit_login(username, password, username_label,
-                                                                      password_label, submit_button),
-                           font=("Consolas", 30),
-                           fg="#00ff00", bg="black", activebackground="lightgrey")
-
+    login_frame.pack()
+    login_frame.pack_propagate(0)
     username_label.place(x=10, y=10)
     username.place(x=250, y=20)
     password_label.place(x=10, y=100)
     password.place(x=250, y=110)
     submit_button.place(x=300, y=250)
+    return_button.place(x=230, y=350)
 
 
 def sign_up(window_frame):
     window_frame.destroy()
+    signup_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
+    username = Entry(signup_frame, font=("Consolas", 20), fg="#00ff00", bg="black")
+    password = Entry(signup_frame, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
+    confirm_password = Entry(signup_frame, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
+    username_label = Label(signup_frame, text="Username: ", font=("Consolas", 30), fg="black")
+    password_label = Label(signup_frame, text="Password: ", font=("Consolas", 30), fg="black")
+    confirm_password_label = Label(signup_frame, text="Confirm Password: ", font=("Consolas", 30), fg="black")
+    submit_button = Button(signup_frame, text="Sign Up", command=lambda: submit_signup(username, password,
+                                                                                       confirm_password, signup_frame),
+                           font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    return_button = Button(signup_frame, text="Return to Main Menu",
+                           command=lambda: return_to_main(signup_frame), font=("Consolas", 20), fg="#00ff00",
+                           bg="black", activebackground="lightgrey")
 
-    username = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black")
-    password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
-    confirm_password = Entry(window, font=("Consolas", 20), fg="#00ff00", bg="black", show="*")
-    username_label = Label(window, text="Username: ", font=("Consolas", 30), fg="black")
-    password_label = Label(window, text="Password: ", font=("Consolas", 30), fg="black")
-    confirm_password_label = Label(window, text="Confirm Password: ", font=("Consolas", 30), fg="black")
-    submit_button = Button(text="Sign Up", command=lambda: submit_signup(username, password, confirm_password,
-                                                                         username_label, password_label,
-                                                                         confirm_password_label, submit_button),
-                           font=("Consolas", 30),
-                           fg="#00ff00", bg="black", activebackground="lightgrey")
+    signup_frame.pack()
+    signup_frame.pack_propagate(0)
     username_label.place(x=10, y=10)
     username.place(x=250, y=20)
     password_label.place(x=10, y=100)
@@ -160,27 +203,23 @@ def sign_up(window_frame):
     confirm_password_label.place(x=10, y=190)
     confirm_password.place(x=450, y=200)
     submit_button.place(x=300, y=350)
+    return_button.place(x=230, y=450)
 
 
-def submit_login(username, password, username_label, password_label, submit_button):
+def submit_login(username, password, login_frame):
     global entered_user
     entered_username = username.get()
     entered_password = password.get()
     logged_in = compare_user(entered_username, entered_password)
     if logged_in:
         entered_user = entered_username
-        username_label.destroy()
-        username.destroy()
-        password_label.destroy()
-        password.destroy()
-        submit_button.destroy()
+        login_frame.destroy()
         choose_quiz_type()
     else:
         messagebox.showerror(title="Login Failed", message="Username and/or password aren't recognised")
 
 
-def submit_signup(username, password, confirm_password, username_label, password_label, confirm_password_label,
-                  submit_button):
+def submit_signup(username, password, confirm_password, signup_frame):
     username_str = str(username.get())
     password_str = str(password.get())
     confirm_password_str = str(confirm_password.get())
@@ -207,13 +246,7 @@ def submit_signup(username, password, confirm_password, username_label, password
     else:
         user_added = add_user(username_str, password_str)
         if user_added:
-            username_label.destroy()
-            username.destroy()
-            password_label.destroy()
-            password.destroy()
-            confirm_password_label.destroy()
-            confirm_password.destroy()
-            submit_button.destroy()
+            signup_frame.destroy()
             starting_page()
         else:
             messagebox.showerror(title="Sign Up Failed", message="That username has been taken")
