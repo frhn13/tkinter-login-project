@@ -29,7 +29,7 @@ def tables_setup():
     conn_scores.commit()
 
     c_quizzes.execute("""CREATE TABLE if not exists quizzes
-                (no_questions TEXT NOT NULL,
+                (no_questions INTEGER NOT NULL,
                 quiz_type TEXT NOT NULL);""")
 
     conn_quizzes.commit()
@@ -166,5 +166,6 @@ def display_quizzes():
 def update_question(correct, question_id):
     conn = sqlite3.connect("tables/questions.db")
     c = conn.cursor()
-    c.execute(f"UPDATE quizzes SET correct = {correct} WHERE rowid = {question_id}")
+    c.execute(f"UPDATE questions SET correct = '{correct}' WHERE rowid = {question_id}")
+    conn.commit()
     conn.close()
