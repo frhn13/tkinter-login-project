@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+from tkinter import ttk
 import random
 from database_functions import tables_setup, add_user, compare_user, add_score, display_scores, display_user_scores, \
     display_quiz_id, add_question, add_quiz, display_quiz_questions, display_quizzes, update_question, \
@@ -105,7 +106,7 @@ def view_scores(scores):
     counter = 0
     for i in range(0, len(scores)):
         if counter < 5:
-            score_label = Label(scores_frame, text=f"{counter+1}) User: {scores[i][0]},\n Score: {scores[i][1]}/"
+            score_label = Label(scores_frame, text=f"{counter + 1}) User: {scores[i][0]},\n Score: {scores[i][1]}/"
                                                    f"{scores[i][2]},\n Quiz Type: {scores[i][3]}\n",
                                 font=("Consolas", 18), fg="black")
             score_label.grid(row=i + 1, column=0, columnspan=2)
@@ -133,7 +134,7 @@ def menu_quiz_validation(scores_frame, score_number, scores):
             messagebox.showerror(title="Input Invalid", message="Quiz Number entered is not valid")
         else:
             scores_frame.destroy()
-            menu_quiz_report(scores[int(score_number)-1], scores)
+            menu_quiz_report(scores[int(score_number) - 1], scores)
     except ValueError:
         messagebox.showerror(title="Input Invalid", message="Quiz Number entered is not an integer")
 
@@ -142,20 +143,28 @@ def menu_quiz_report(score, scores):
     report_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
     report_frame.pack()
     report_frame.pack_propagate(0)
+    report_canvas = Canvas(report_frame)
+    report_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+    scrollbar = ttk.Scrollbar(report_frame, orient=VERTICAL, command=report_canvas.yview)
+    scrollbar.pack(side=RIGHT, fill=Y)
+    report_canvas.configure(yscrollcommand=scrollbar.set)
+    report_canvas.bind("<Configure>", lambda e: report_canvas.configure(scrollregion=report_canvas.bbox("all")))
+    second_frame = Frame(report_canvas)
+    report_canvas.create_window((0, 0), window=second_frame, anchor="nw")
     quiz_questions = display_quiz_questions(score[5])
-    quizzes_button = Button(report_frame, text="Return to Scores",
+    quizzes_button = Button(second_frame, text="Return to Scores",
                             command=lambda: return_to_scores(report_frame, scores),
                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
-    return_button = Button(report_frame, text="Return to Main Menu", command=lambda: return_to_main(report_frame),
+    return_button = Button(second_frame, text="Return to Main Menu", command=lambda: return_to_main(report_frame),
                            font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
 
     for i in range(len(quiz_questions)):
         if quiz_questions[i][2] == "True":
-            score_label = Label(report_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
+            score_label = Label(second_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
                                                    f"{quiz_questions[i][2]}\n",
                                 font=("Consolas", 18), fg="black")
         else:
-            score_label = Label(report_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
+            score_label = Label(second_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
                                                    f"{quiz_questions[i][2]}, Answer: {quiz_questions[i][1]}\n",
                                 font=("Consolas", 18), fg="black")
         score_label.pack()
@@ -306,37 +315,51 @@ def previous_quizzes(quiz_frame):
     quiz_frame.destroy()
     quizzes = display_quizzes()
     quizzes_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
+    quiz_canvas = Canvas(quizzes_frame)
+    quiz_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+    scrollbar = ttk.Scrollbar(quizzes_frame, orient=VERTICAL, command=quiz_canvas.yview)
+    scrollbar.pack(side=RIGHT, fill=Y)
+    quiz_canvas.configure(yscrollcommand=scrollbar.set)
+    quiz_canvas.bind("<Configure>", lambda e: quiz_canvas.configure(scrollregion=quiz_canvas.bbox("all")))
+    second_frame = Frame(quiz_canvas)
+    quiz_canvas.create_window((0, 0), window=second_frame, anchor="nw")
     for i in range(len(quizzes)):
-        quiz_label = Label(quizzes_frame, text=f"Quiz No: {i+1},\n No. of Questions: {quizzes[i][1]}\n"
-                                               f"Quiz Type: {quizzes[i][2]}\n", font=("Consolas", 18), fg="black")
-        choose_quiz_button = Button(quizzes_frame, text="Do Quiz",
-                                    command=lambda: create_quiz(quizzes_frame, quizzes[i], quizzes),
-                                    font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+        quiz_label = Label(second_frame, text=f"Quiz No: {i + 1},\n No. of Questions: {quizzes[i][1]}\n"
+                                              f"Quiz Type: {quizzes[i][2]}\n", font=("Consolas", 18), fg="black")
         quiz_label.pack()
         # choose_quiz_button.grid(row=i, column=1)
-    redo_quiz_label = Label(quizzes_frame, text="Enter Number of Quiz to Redo", font=("Consolas", 20), fg="black")
-    quiz_report_button = Button(quizzes_frame, text="Redo Quiz",
-                                command=lambda: create_quiz(quizzes_frame, quiz_entry.get(), quizzes),
-                                font=("Consolas", 20), fg="#00ff00", bg="black", activebackground="lightgrey")
+    redo_quiz_label = Label(second_frame, text="Enter Number of Quiz to Redo", font=("Consolas", 20), fg="black")
+    quiz_report_button = Button(second_frame, text="Redo Quiz",
+                                command=lambda: create_quiz(second_frame, quiz_entry.get(), quizzes),
+                                font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
+    return_button = Button(second_frame, text="Return to Quiz Selection", command=lambda: return_to_quiz(quizzes_frame),
+                           font=("Consolas", 20), fg="#00ff00", bg="black", activebackground="lightgrey")
 
-    quiz_entry = Entry(quizzes_frame, font=("Consolas", 20), fg="#00ff00", bg="black")
+    quiz_entry = Entry(second_frame, font=("Consolas", 20), fg="#00ff00", bg="black")
     redo_quiz_label.pack()
     quiz_entry.pack()
     quiz_report_button.pack()
+    return_button.pack()
     quizzes_frame.pack()
     quizzes_frame.pack_propagate(0)
+    quiz_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+
+def return_to_quiz(frame):
+    frame.destroy()
+    choose_quiz_type()
 
 
 def create_quiz(quiz_frame, quiz_number, quizzes):
     try:
         if int(quiz_number) > len(quizzes):
-            messagebox.showerror(title="Error", message="Bad")
+            messagebox.showerror(title="Invalid Entry", message="That Quiz Number doesn't exist")
         else:
-            quiz_number = int(quiz_number)-1
+            quiz_number = int(quiz_number) - 1
             quiz_frame.destroy()
             quiz_game(quizzes[quiz_number])
     except ValueError:
-        messagebox.showerror(title="Error", message="Bad")
+        messagebox.showerror(title="Invalid Entry", message="Quiz Number entered must be an Integer")
 
 
 def quiz_game(quiz):
@@ -352,13 +375,13 @@ def quiz_game(quiz):
     answer_entry = Entry(quiz_game_frame, font=("Consolas", 30), fg="#00ff00", bg="black")
     submit_button = Button(quiz_game_frame, text="Check Answer",
                            command=lambda: check_fixed_answer(answer_entry, quiz_game_frame, quiz,
-                                                              quiz_questions[question_number-1][0]),
+                                                              quiz_questions[question_number - 1][0]),
                            font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
     score_label = Label(quiz_game_frame, text="PLACEHOLDER", font=("Consolas", 30), fg="black")
 
     if question_number <= len(quiz_questions):
-        answer = quiz_questions[question_number-1][2]
-        question_label.config(text=quiz_questions[question_number-1][1])
+        answer = quiz_questions[question_number - 1][2]
+        question_label.config(text=quiz_questions[question_number - 1][1])
         question_number_label.pack()
         question_label.pack()
         answer_entry.pack()
@@ -511,22 +534,29 @@ def save_score(quiz_type, previous_quiz, quiz_id, quiz_length):
 def quiz_report(scores_frame):
     scores_frame.destroy()
     report_frame = Frame(window, bd=20, relief=RAISED, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
-    report_frame.pack()
-    report_frame.pack_propagate(0)
+    report_frame.pack(fill=BOTH, expand=1)  # Can be used instead of pack_propagate(0)
+    report_canvas = Canvas(report_frame)
+    report_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+    scrollbar = ttk.Scrollbar(report_frame, orient=VERTICAL, command=report_canvas.yview)
+    scrollbar.pack(side=RIGHT, fill=Y)
+    report_canvas.configure(yscrollcommand=scrollbar.set)
+    report_canvas.bind("<Configure>", lambda e: report_canvas.configure(scrollregion=report_canvas.bbox("all")))
+    second_frame = Frame(report_canvas)
+    report_canvas.create_window((0, 0), window=second_frame, anchor="nw")
     current_quiz = display_quiz_id()
     quiz_questions = display_quiz_questions(current_quiz)
-    logout_button = Button(report_frame, text="Log out", command=lambda: endgame(report_frame, "logout"),
+    logout_button = Button(second_frame, text="Log out", command=lambda: endgame(report_frame, "logout"),
                            font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
-    restart_button = Button(report_frame, text="Do Another Quiz", command=lambda: endgame(report_frame, "restart"),
+    restart_button = Button(second_frame, text="Do Another Quiz", command=lambda: endgame(report_frame, "restart"),
                             font=("Consolas", 30), fg="#00ff00", bg="black", activebackground="lightgrey")
 
     for i in range(len(quiz_questions)):
         if quiz_questions[i][2] == "True":
-            score_label = Label(report_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
+            score_label = Label(second_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
                                                    f"{quiz_questions[i][2]}\n",
                                 font=("Consolas", 18), fg="black")
         else:
-            score_label = Label(report_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
+            score_label = Label(second_frame, text=f"Question: {quiz_questions[i][0]},\n Correct?: "
                                                    f"{quiz_questions[i][2]}, Answer: {quiz_questions[i][1]}\n",
                                 font=("Consolas", 18), fg="black")
         score_label.pack()
@@ -544,7 +574,6 @@ def endgame(frame, end_game):
 
 
 window = Tk()
-window
 window.resizable(False, False)
 window.title("Quiz Game")
 

@@ -1,4 +1,7 @@
 /scores.csv
 /users.csv
 /venv/
-/tables/
+tables/questions.db
+tables/quizzes.db
+tables/scores.db
+tables/users.db
